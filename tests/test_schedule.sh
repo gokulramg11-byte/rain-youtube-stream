@@ -64,7 +64,7 @@ test_hour 18 "out"
 test_hour 19 "out"
 
 # Test TEST_MODE override
-if TEST_MODE=true bash -c 'source scripts/stream.sh 2>/dev/null || true'; then
+if TEST_MODE=true TEST_DURATION=1 bash -c 'source scripts/stream.sh 2>/dev/null || true'; then
   echo "  [PASS] TEST_MODE=true successfully bypasses schedule"
   PASSED=$((PASSED + 1))
 fi
