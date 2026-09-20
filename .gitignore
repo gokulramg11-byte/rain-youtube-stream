@@ -11,8 +11,7 @@ logs/*.lock
 !logs/.gitkeep
 concat_list.txt
 
-# Videos (keep directory structure, ignore raw heavy video files unless committed)
-videos/*.mp4
+# Videos
 !videos/.gitkeep
 
 # Operating system files
