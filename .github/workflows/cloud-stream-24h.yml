@@ -3,14 +3,14 @@ name: 24/7 Cloud Live Stream (5h50m Chunks)
 on:
   schedule:
     # 4 Chunks daily (5h 50m stream + 10m gap):
-    # Chunk 1: Starts 9:55 PM IST (16:25 UTC) -> 5h 50m (ends 03:45 IST)
-    - cron: '25 16 * * *'
-    # Chunk 2: Starts 3:55 AM IST (22:25 UTC) -> 5h 50m (ends 09:45 IST)
-    - cron: '25 22 * * *'
-    # Chunk 3: Starts 9:55 AM IST (04:25 UTC) -> 5h 50m (ends 15:45 IST)
-    - cron: '25 4 * * *'
-    # Chunk 4: Starts 3:55 PM IST (10:25 UTC) -> 5h 50m (ends 21:45 IST)
-    - cron: '25 10 * * *'
+    # Chunk 1: Starts 10:05 PM IST (16:35 UTC) -> 5h 50m (ends 03:55 IST)
+    - cron: '35 16 * * *'
+    # Chunk 2: Starts 4:05 AM IST (22:35 UTC) -> 5h 50m (ends 09:55 IST)
+    - cron: '35 22 * * *'
+    # Chunk 3: Starts 10:05 AM IST (04:35 UTC) -> 5h 50m (ends 15:55 IST)
+    - cron: '35 4 * * *'
+    # Chunk 4: Starts 4:05 PM IST (10:35 UTC) -> 5h 50m (ends 21:55 IST)
+    - cron: '35 10 * * *'
 
   workflow_dispatch:
     inputs:
