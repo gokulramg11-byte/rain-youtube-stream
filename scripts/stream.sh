@@ -94,6 +94,38 @@ set_state() {
   echo "${new_state}" > "${STATE_FILE}"
 }
 
+DISCORD_WEBHOOK_URL="${DISCORD_WEBHOOK_URL:-}"
+TELEGRAM_BOT_TOKEN="${TELEGRAM_BOT_TOKEN:-}"
+TELEGRAM_CHAT_ID="${TELEGRAM_CHAT_ID:-}"
+
+send_notification() {
+  local title="$1"
+  local message="$2"
+
+  if [[ -n "${DISCORD_WEBHOOK_URL}" ]] && command -v curl &>/dev/null; then
+    local payload
+    payload=$(cat <<EOF
+{
+  "embeds": [{
+    "title": "${title}",
+    "description": "${message}",
+    "color": 3066993
+  }]
+}
+EOF
+)
+    curl -s -H "Content-Type: application/json" -X POST -d "${payload}" "${DISCORD_WEBHOOK_URL}" &>/dev/null || true
+  fi
+
+  if [[ -n "${TELEGRAM_BOT_TOKEN}" && -n "${TELEGRAM_CHAT_ID}" ]] && command -v curl &>/dev/null; then
+    local text="*${title}*%0A${message}"
+    curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+      -d "chat_id=${TELEGRAM_CHAT_ID}" \
+      -d "text=${text}" \
+      -d "parse_mode=Markdown" &>/dev/null || true
+  fi
+}
+
 # Check if current time is within streaming window (20:00 to 06:00 IST)
 is_in_schedule() {
   if [[ "${TEST_MODE}" == "true" ]]; then
@@ -210,6 +242,7 @@ cleanup() {
   fi
   rm -f "${PID_FILE}" "${CONCAT_FILE}" 2>/dev/null || true
   set_state "STOPPED"
+  send_notification "🛑 YouTube Live Stream STOPPED" "Supervisor process shut down cleanly."
   log_message "INFO" "Supervisor stopped cleanly."
   exit 0
 }
@@ -247,6 +280,7 @@ fi
 # Main Supervisor Loop
 # -----------------------------------------------------------------------------
 set_state "RUNNING"
+send_notification "🌧️ YouTube Live Stream STARTED" "Profile: ${STREAM_PROFILE} (${VIDEO_WIDTH}x${VIDEO_HEIGHT}@${VIDEO_FPS}fps), Mode: ${PLAYLIST_MODE}"
 GOP=$((VIDEO_FPS * KEYFRAME_INTERVAL))
 DEST_TARGET="${YOUTUBE_STREAM_URL}/${YOUTUBE_STREAM_KEY}"
 

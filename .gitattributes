@@ -1,0 +1,10 @@
+# Auto-detect text files and perform LF normalization
+* text=auto
+
+# Force LF line endings for Shell scripts, YAML workflows, Dockerfile and Configs
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+Dockerfile text eol=lf
+playlist.txt text eol=lf
+.gitignore text eol=lf
