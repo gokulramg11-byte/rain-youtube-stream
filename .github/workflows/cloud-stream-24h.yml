@@ -46,12 +46,14 @@ jobs:
           YOUTUBE_STREAM_URL: ${{ secrets.YOUTUBE_STREAM_URL }}
           YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
           TEST_MODE: "true"
-          TEST_DURATION: ${{ inputs.duration_minutes && inputs.duration_minutes * 60 || 21000 }}
+          INPUT_MINS: ${{ inputs.duration_minutes }}
           STREAM_PROFILE: "720p"
         run: |
           if [ -z "${YOUTUBE_STREAM_KEY}" ]; then
             echo "Error: YOUTUBE_STREAM_KEY secret is missing! Please configure it under GitHub Repository Secrets." >&2
             exit 1
           fi
-          echo "Starting GitHub-Hosted Stream Chunk (Duration: ${TEST_DURATION}s / 5h 50m)..."
+          MINS="${INPUT_MINS:-350}"
+          export TEST_DURATION=$((MINS * 60))
+          echo "Starting GitHub-Hosted Stream Chunk (Duration: ${TEST_DURATION}s / ${MINS} mins)..."
           bash scripts/stream.sh
