@@ -1,0 +1,24 @@
+# Environment files and secrets
+.env
+stream.env
+config/stream.env
+
+# Logs and State files
+logs/*.log
+logs/*.pid
+logs/*.state
+logs/*.lock
+!logs/.gitkeep
+concat_list.txt
+
+# Videos (keep directory structure, ignore raw heavy video files unless committed)
+videos/*.mp4
+!videos/.gitkeep
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Docker / Temporary runtime data
+tmp/
+state/

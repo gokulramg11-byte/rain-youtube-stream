@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  streamer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rain-streamer
+    restart: unless-stopped
+    environment:
+      - YOUTUBE_STREAM_URL=${YOUTUBE_STREAM_URL:-rtmps://a.rtmp.youtube.com/live2}
+      - YOUTUBE_STREAM_KEY=${YOUTUBE_STREAM_KEY:-}
+      - STREAM_PROFILE=${STREAM_PROFILE:-1080p}
+      - PLAYLIST_MODE=${PLAYLIST_MODE:-sequential}
+      - TIMEZONE=Asia/Kolkata
+      - START_TIME=20:00
+      - STOP_TIME=06:00
+    env_file:
+      - path: config/stream.env
+        required: false
+      - path: .env
+        required: false
+    volumes:
+      - ./videos:/app/videos
+      - ./config:/app/config
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "bash", "/app/scripts/health-check.sh"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s

@@ -1,0 +1,34 @@
+name: Deploy to Self-Hosted Runner
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    name: Synchronize Code & Deploy Streamer
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Permissions
+        run: |
+          chmod +x scripts/*.sh
+
+      - name: Validate Playlist & Videos
+        run: |
+          bash scripts/validate-videos.sh || echo "Notice: Playlist validation warning during deploy."
+
+      - name: Deploy Docker Service (if Docker present)
+        run: |
+          if command -v docker-compose &>/dev/null; then
+            echo "Deploying update via Docker Compose..."
+            docker-compose up -d --build
+          elif command -v docker &>/dev/null && docker compose version &>/dev/null; then
+            echo "Deploying update via Docker Compose v2..."
+            docker compose up -d --build
+          else
+            echo "Docker not present. Code updated for standalone supervisor systemd/cron schedule."
+          fi

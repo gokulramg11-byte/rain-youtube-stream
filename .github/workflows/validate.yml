@@ -1,0 +1,45 @@
+name: Validate Repository & Scripts
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate:
+    name: Validate Shell Scripts & Configuration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Validate Shell Script Syntax
+        run: |
+          echo "Checking shell script syntax with bash -n..."
+          for script in scripts/*.sh tests/*.sh; do
+            echo "Checking ${script}..."
+            bash -n "${script}"
+          done
+
+      - name: Run Test Suite
+        run: |
+          echo "Running unit test suite..."
+          bash tests/test_playlist.sh
+          bash tests/test_schedule.sh
+          bash tests/test_config.sh
+
+      - name: Scan for Exposed Secrets
+        run: |
+          echo "Scanning repository files for hardcoded secrets or stream keys..."
+          if grep -rnE "rtmps?://[a-zA-Z0-9./_-]+\?[a-zA-Z0-9_=-]+" . --exclude-dir=.git --exclude-dir=logs; then
+            echo "Error: Potential RTMP URL secret found!" >&2
+            exit 1
+          fi
+          echo "No secrets detected."

@@ -1,0 +1,57 @@
+name: 24/7 Cloud Live Stream (5h50m Chunks)
+
+on:
+  schedule:
+    # 4 Chunks daily (5h 50m stream + 10m gap):
+    # Chunk 1: Starts 9:00 PM IST (15:30 UTC) -> 5h 50m (ends 02:50 IST)
+    - cron: '30 15 * * *'
+    # Chunk 2: Starts 3:00 AM IST (21:30 UTC) -> 5h 50m (ends 08:50 IST)
+    - cron: '30 21 * * *'
+    # Chunk 3: Starts 9:00 AM IST (03:30 UTC) -> 5h 50m (ends 14:50 IST)
+    - cron: '30 3 * * *'
+    # Chunk 4: Starts 3:00 PM IST (09:30 UTC) -> 5h 50m (ends 20:50 IST)
+    - cron: '30 9 * * *'
+
+  workflow_dispatch:
+    inputs:
+      duration_minutes:
+        description: 'Stream duration in minutes (default 350 mins = 5h 50m)'
+        required: true
+        default: '350'
+
+jobs:
+  cloud_stream_chunk:
+    name: GitHub-Hosted Cloud Stream Chunk (5h 50m)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install FFmpeg & System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg bash coreutils curl grep gawk
+
+      - name: Set Script Permissions
+        run: |
+          chmod +x scripts/*.sh
+
+      - name: Validate Playlist
+        run: |
+          bash scripts/validate-videos.sh
+
+      - name: Execute Live Stream Chunk
+        env:
+          YOUTUBE_STREAM_URL: ${{ secrets.YOUTUBE_STREAM_URL }}
+          YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+          TEST_MODE: "true"
+          TEST_DURATION: ${{ inputs.duration_minutes && inputs.duration_minutes * 60 || 21000 }}
+          STREAM_PROFILE: "720p"
+        run: |
+          if [ -z "${YOUTUBE_STREAM_KEY}" ]; then
+            echo "Error: YOUTUBE_STREAM_KEY secret is missing! Please configure it under GitHub Repository Secrets." >&2
+            exit 1
+          fi
+          echo "Starting GitHub-Hosted Stream Chunk (Duration: ${TEST_DURATION}s / 5h 50m)..."
+          bash scripts/stream.sh

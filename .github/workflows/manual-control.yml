@@ -1,0 +1,60 @@
+name: Stream Manual Controls
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Operation to perform on self-hosted streaming machine'
+        required: true
+        default: 'status'
+        type: choice
+        options:
+          - start
+          - stop
+          - restart
+          - status
+          - health-check
+          - validate-playlist
+
+jobs:
+  manual_control:
+    name: Execute Manual Stream Command
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Execute Manual Action
+        env:
+          YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+          YOUTUBE_STREAM_URL: ${{ secrets.YOUTUBE_STREAM_URL }}
+        run: |
+          chmod +x scripts/*.sh
+          ACTION="${{ inputs.action }}"
+          echo "Executing manual action: ${ACTION}"
+
+          case "${ACTION}" in
+            start)
+              bash scripts/start-stream.sh
+              ;;
+            stop)
+              bash scripts/stop-stream.sh
+              ;;
+            restart)
+              bash scripts/restart-stream.sh
+              ;;
+            status)
+              bash scripts/status.sh
+              ;;
+            health-check)
+              bash scripts/health-check.sh
+              ;;
+            validate-playlist)
+              bash scripts/validate-videos.sh
+              ;;
+            *)
+              echo "Error: Unknown action '${ACTION}'" >&2
+              exit 1
+              ;;
+          esac
