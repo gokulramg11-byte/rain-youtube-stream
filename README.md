@@ -1,8 +1,9 @@
 # Automated YouTube Rain Ambience Live Streaming System
 
-A production-ready, automated live streaming system designed to stream relaxing rain ambience videos to YouTube Live continuously on a daily schedule (**8:00 PM IST to 6:00 AM IST next day - 10 hours total**).
+A production-ready, automated live streaming system designed to stream relaxing rain ambience videos to YouTube Live continuously on a 24/7 schedule split into 4 daily chunks (**5 Hours 50 Minutes each with 10-minute buffer gaps**, starting Chunk 1 at **10:05 PM IST**).
 
-Built using **Bash, FFmpeg, Docker, systemd/cron, and GitHub Actions**.
+Built using **Bash, FFmpeg, Docker, systemd/cron, and GitHub Actions Cloud Runners**.
+
 
 ---
 
