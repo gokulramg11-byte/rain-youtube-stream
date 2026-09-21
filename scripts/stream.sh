@@ -313,7 +313,7 @@ while true; do
   log_message "INFO" "Launching FFmpeg streaming pipeline..."
 
   FFMPEG_CMD=(
-    ffmpeg -loglevel warning -re
+    ffmpeg -re
     -fflags +genpts+igndts
     -f concat -safe 0 -stream_loop -1 -i "${CONCAT_FILE}"
     -c:v libx264 -preset veryfast -pix_fmt yuv420p
@@ -331,16 +331,9 @@ while true; do
     "${FFMPEG_CMD[@]}" -f null - &>/dev/null &
     FFMPEG_PID=$!
   else
-    FFMPEG_LOG_OUT="${LOG_DIR}/ffmpeg_exec.log"
-    > "${FFMPEG_LOG_OUT}"
-    "${FFMPEG_CMD[@]}" "${DEST_TARGET}" > "${FFMPEG_LOG_OUT}" 2>&1 &
+    log_message "INFO" "Executing FFmpeg live stream directly to target..."
+    "${FFMPEG_CMD[@]}" "${DEST_TARGET}" &
     FFMPEG_PID=$!
-    
-    # Background log tailer to stream log output without masking PID
-    ( tail -f "${FFMPEG_LOG_OUT}" 2>/dev/null | while IFS= read -r line; do
-        log_message "FFMPEG" "${line}"
-      done ) &
-    TAIL_PID=$!
   fi
   CYCLE_START=$(date +%s)
 
@@ -372,10 +365,6 @@ while true; do
   done
 
   wait "${FFMPEG_PID}" 2>/dev/null || true
-  if [[ -n "${TAIL_PID:-}" ]]; then
-    kill -TERM "${TAIL_PID}" 2>/dev/null || true
-    wait "${TAIL_PID}" 2>/dev/null || true
-  fi
   CYCLE_END=$(date +%s)
   CYCLE_DURATION=$((CYCLE_END - CYCLE_START))
 
