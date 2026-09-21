@@ -314,11 +314,14 @@ while true; do
 
   FFMPEG_CMD=(
     ffmpeg -loglevel warning -re
+    -fflags +genpts+igndts
     -f concat -safe 0 -stream_loop -1 -i "${CONCAT_FILE}"
     -c:v libx264 -preset veryfast -pix_fmt yuv420p
     -b:v "${VIDEO_BITRATE}" -maxrate "${VIDEO_BITRATE}" -bufsize 20M
     -g "${GOP}" -keyint_min "${GOP}" -sc_threshold 0
     -c:a aac -b:a "${AUDIO_BITRATE}" -ar 48000 -ac 2
+    -flvflags no_duration_filesize
+    -rw_timeout 15000000
     -f flv
   )
 
@@ -326,13 +329,19 @@ while true; do
     log_message "INFO" "DRY RUN MODE: FFmpeg command preview:"
     log_message "INFO" "${FFMPEG_CMD[*]} [REDACTED_TARGET]"
     "${FFMPEG_CMD[@]}" -f null - &>/dev/null &
+    FFMPEG_PID=$!
   else
-    "${FFMPEG_CMD[@]}" "${DEST_TARGET}" 2>&1 | while IFS= read -r line; do
-      log_message "FFMPEG" "${line}"
-    done &
+    FFMPEG_LOG_OUT="${LOG_DIR}/ffmpeg_exec.log"
+    > "${FFMPEG_LOG_OUT}"
+    "${FFMPEG_CMD[@]}" "${DEST_TARGET}" > "${FFMPEG_LOG_OUT}" 2>&1 &
+    FFMPEG_PID=$!
+    
+    # Background log tailer to stream log output without masking PID
+    ( tail -f "${FFMPEG_LOG_OUT}" 2>/dev/null | while IFS= read -r line; do
+        log_message "FFMPEG" "${line}"
+      done ) &
+    TAIL_PID=$!
   fi
-
-  FFMPEG_PID=$!
   CYCLE_START=$(date +%s)
 
   # Monitor FFmpeg execution
@@ -363,6 +372,10 @@ while true; do
   done
 
   wait "${FFMPEG_PID}" 2>/dev/null || true
+  if [[ -n "${TAIL_PID:-}" ]]; then
+    kill -TERM "${TAIL_PID}" 2>/dev/null || true
+    wait "${TAIL_PID}" 2>/dev/null || true
+  fi
   CYCLE_END=$(date +%s)
   CYCLE_DURATION=$((CYCLE_END - CYCLE_START))
 
