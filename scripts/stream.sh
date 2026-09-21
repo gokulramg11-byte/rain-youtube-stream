@@ -316,6 +316,7 @@ while true; do
     ffmpeg -re
     -fflags +genpts+igndts
     -f concat -safe 0 -stream_loop -1 -i "${CONCAT_FILE}"
+    -r "${VIDEO_FPS}"
     -c:v libx264 -preset veryfast -pix_fmt yuv420p
     -b:v "${VIDEO_BITRATE}" -maxrate "${VIDEO_BITRATE}" -bufsize 20M
     -g "${GOP}" -keyint_min "${GOP}" -sc_threshold 0
